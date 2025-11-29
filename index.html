@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PURGE SYSTEMS | ELIMINATE MOISTURE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --hazard-yellow: #EAB308;
+            --alert-red: #FF2A2A;
+            --void-black: #050505;
+            --tech-gray: #1a1a1a;
+            --off-white: #e1e1e1;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--void-black);
+            color: var(--off-white);
+            font-family: 'JetBrains Mono', monospace;
+            overflow-x: hidden;
+            cursor: none; /* Hide default cursor */
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+            body { cursor: auto; } /* Restore cursor on touch devices */
+            #cursor { display: none !important; }
+            .mega-type { letter-spacing: -0.02em !important; }
+        }
+
+        h1, h2, h3, .heading-font {
+            font-family: 'Chakra Petch', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* CUSTOM CURSOR - OPTIMIZED */
+        #cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--hazard-yellow);
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0; /* Start hidden to prevent jump */
+            transform: translate3d(0, 0, 0) translate(-50%, -50%); /* Hardware accelerated */
+            transition: width 0.2s ease-out, height 0.2s ease-out, background-color 0.2s, opacity 0.2s;
+            mix-blend-mode: difference;
+        }
+        
+        /* Cursor Center Dot */
+        #cursor::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 4px; height: 4px;
+            background: var(--hazard-yellow);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+        /* Cursor Hover State (Triggered by JS) */
+        #cursor.hovered {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(234, 179, 8, 0.1);
+            border-color: var(--hazard-yellow);
+        }
+
+        /* BOOT SCREEN */
+        #boot-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--void-black);
+            z-index: 100;
+            display: flex;
+            flex-col: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .loading-bar {
+            width: 300px;
+            max-width: 80vw;
+            height: 4px;
+            background: #333;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .loading-progress {
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%;
+            background: var(--hazard-yellow);
+            width: 0%;
+            animation: load 2.0s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
+
+        /* SCROLL BAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--void-black); }
+        ::-webkit-scrollbar-thumb { background: var(--hazard-yellow); }
+
+        /* UTILITIES */
+        .mega-type {
+            font-size: clamp(3rem, 11vw, 12rem);
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            word-break: break-word;
+        }
+        .stroke-text {
+            -webkit-text-stroke: 1px var(--off-white);
+            color: transparent;
+            transition: all 0.3s ease;
+        }
+        .stroke-text:hover {
+            color: var(--hazard-yellow);
+            -webkit-text-stroke: 0px;
+            text-shadow: 0 0 20px rgba(234, 179, 8, 0.5);
+        }
+
+        /* GLITCH BUTTON */
+        .btn-primary {
+            position: relative;
+            background: transparent;
+            color: var(--off-white);
+            border: 1px solid var(--off-white);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background: var(--off-white);
+            color: var(--void-black);
+            box-shadow: 4px 4px 0 var(--hazard-yellow);
+            transform: translate(-2px, -2px);
+        }
+        
+        /* NOISE & SCANLINE */
+        .scanline {
+            position: fixed; left: 0; top: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 51%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 40;
+            opacity: 0.3;
+        }
+        .vignette {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle, transparent 60%, black 100%);
+            pointer-events: none;
+            z-index: 39;
+        }
+
+        /* PRODUCT ABSTRACT SHAPE */
+        .abstract-product {
+            width: 300px; height: 400px;
+            background: #111;
+            border: 1px solid #333;
+            position: relative;
+            transform: perspective(1000px) rotateY(-15deg);
+            box-shadow: 20px 20px 50px rgba(0,0,0,0.8);
+            transition: transform 0.5s ease;
+        }
+        .abstract-product:hover {
+            transform: perspective(1000px) rotateY(-5deg) scale(1.05);
+        }
+        .abstract-button {
+            position: absolute; top: 0; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px; height: 20px;
+            background: var(--hazard-yellow);
+            box-shadow: 0 0 15px var(--hazard-yellow);
+            animation: pulse-btn 2s infinite;
+        }
+        @keyframes pulse-btn { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; box-shadow: 0 0 25px var(--hazard-yellow); } }
+
+        /* MARQUEE ANIMATION */
+        .marquee-wrapper {
+            overflow: hidden;
+            display: flex;
+            user-select: none;
+        }
+        .marquee-content {
+            display: flex;
+            white-space: nowrap;
+            animation: marquee 30s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* TEXT GLITCH ANIMATION */
+        .glitch-text {
+            position: relative;
+        }
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(13px, 9999px, 81px, 0); }
+            5% { clip: rect(82px, 9999px, 19px, 0); }
+            10% { clip: rect(93px, 9999px, 21px, 0); }
+            15% { clip: rect(2px, 9999px, 86px, 0); }
+            20% { clip: rect(56px, 9999px, 63px, 0); }
+            100% { clip: rect(0, 0, 0, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(54px, 9999px, 23px, 0); }
+            5% { clip: rect(12px, 9999px, 94px, 0); }
+            10% { clip: rect(43px, 9999px, 65px, 0); }
+            15% { clip: rect(98px, 9999px, 54px, 0); }
+            20% { clip: rect(21px, 9999px, 32px, 0); }
+            100% { clip: rect(0, 0, 0, 0); }
+        }
+    </style>
+</head>
+<body class="pb-16 md:pb-0"> <!-- Padding bottom for mobile nav -->
+
+    <!-- BOOT SCREEN -->
+    <div id="boot-screen">
+        <div class="text-4xl font-bold mb-2 tracking-tighter text-yellow-500 heading-font glitch-text" data-text="PURGE.SYS">PURGE.SYS</div>
+        <div class="text-xs font-mono text-zinc-500 mb-8">INITIALIZING CORE MODULES...</div>
+        <div class="loading-bar"><div class="loading-progress"></div></div>
+        <div class="mt-2 text-[10px] text-zinc-600 font-mono" id="boot-text">LOADING...</div>
+    </div>
+
+    <!-- CUSTOM CURSOR -->
+    <div id="cursor" class="hidden md:block"></div>
+
+    <!-- FX LAYERS -->
+    <div class="scanline"></div>
+    <div class="vignette"></div>
+
+    <!-- LAYOUT -->
+    <div class="flex flex-col md:flex-row min-h-screen relative z-10">
+
+        <!-- DESKTOP SIDEBAR / MOBILE BOTTOM BAR -->
+        <aside class="
+            fixed bottom-0 left-0 w-full h-16 border-t border-zinc-800 bg-zinc-900/90 backdrop-blur z-50 flex flex-row items-center justify-around px-4
+            md:sticky md:top-0 md:w-24 md:h-screen md:border-t-0 md:border-r md:flex-col md:justify-between md:p-4
+        ">
+            <!-- Logo -->
+            <div class="text-xl font-bold text-yellow-500 md:-rotate-90 md:mt-12 tracking-widest whitespace-nowrap heading-font hidden md:block">
+                PURGE
+            </div>
+            
+            <!-- Mobile Logo -->
+            <div class="md:hidden font-bold text-yellow-500 heading-font tracking-widest">
+                PURGE
+            </div>
+
+            <!-- Mobile Nav Icons -->
+            <div class="flex md:hidden gap-8 text-zinc-400">
+                <a href="#hero" class="hover:text-yellow-500"><i data-lucide="home" class="w-6 h-6"></i></a>
+                <a href="#specs" class="hover:text-yellow-500"><i data-lucide="cpu" class="w-6 h-6"></i></a>
+                <a href="#logs" class="hover:text-yellow-500"><i data-lucide="file-text" class="w-6 h-6"></i></a>
+            </div>
+
+            <!-- Scroll Progress Indicator (Desktop Only) -->
+            <div class="hidden md:flex flex-col gap-1 items-center h-32 w-1 bg-zinc-800 rounded-full overflow-hidden relative">
+                <div id="scroll-progress" class="w-full bg-yellow-500 absolute top-0 left-0 transition-all duration-100" style="height: 0%"></div>
+            </div>
+
+            <!-- Footer Icons (Desktop) -->
+            <div class="hidden md:flex flex-col gap-6 text-zinc-500">
+                <i data-lucide="cpu" class="w-5 h-5 hover:text-white transition-colors cursor-none"></i>
+                <i data-lucide="wifi" class="w-5 h-5 hover:text-white transition-colors cursor-none"></i>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 relative bg-void-black w-full">
+            
+            <!-- BG GRID -->
+            <div class="absolute inset-0 z-0 opacity-10" 
+                 style="background-image: linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px); background-size: 40px 40px;">
+            </div>
+
+            <!-- NAVBAR (Top Bar) -->
+            <header class="flex justify-between items-center p-4 md:p-6 border-b border-zinc-800 bg-void-black/80 backdrop-blur z-20 sticky top-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] md:text-xs font-mono text-zinc-400">STATUS: <span class="text-green-500">READY</span></span>
+                </div>
+                <div class="flex gap-4">
+                    <button class="text-[10px] md:text-xs font-bold text-zinc-500 hover:text-white uppercase transition-colors">SCHEMATICS</button>
+                    <button class="text-[10px] md:text-xs font-bold text-yellow-500 hover:text-white uppercase transition-colors border border-yellow-500 px-3 py-1 bg-yellow-500/10 hover:bg-yellow-500/20">UPLINK</button>
+                </div>
+            </header>
+
+            <!-- HERO SECTION -->
+            <section id="hero" class="min-h-[85vh] flex flex-col justify-center px-4 md:px-20 py-12 relative overflow-hidden">
+                
+                <div class="relative z-10 max-w-5xl">
+                    <div class="mb-6 flex items-center gap-4">
+                        <span class="text-[10px] font-mono border border-red-600 text-red-500 px-2 py-1 bg-red-900/10 animate-pulse">
+                            ⚠ CRITICAL MOISTURE LEVELS
+                        </span>
+                    </div>
+
+                    <h1 class="mega-type font-bold leading-none select-none mb-8">
+                        <span class="block text-white glitch-text" data-text="PURGE">PURGE</span>
+                        <span class="block stroke-text">MOISTURE</span>
+                    </h1>
+
+                    <div class="flex flex-col md:flex-row gap-12 items-start">
+                        <div class="max-w-lg">
+                            <p class="text-zinc-400 font-mono text-xs md:text-sm leading-relaxed mb-8 border-l-2 border-yellow-500 pl-4 md:pl-6">
+                                The industry standard is failure. <strong class="text-white">PURGE</strong> is the correction. 
+                                High-velocity exhaust, precision load sensing, and direct IoT control for filaments that demand perfection.
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button class="btn-primary w-full sm:w-auto px-8 py-4 uppercase font-bold text-sm tracking-wider flex items-center justify-center gap-4 group">
+                                    ENGAGE PROTOCOL
+                                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                                </button>
+                                <button class="text-zinc-500 hover:text-white font-mono text-xs uppercase underline underline-offset-4 text-center sm:text-left p-2">
+                                    ACCESS TERMINAL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABSTRACT PRODUCT VISUAL (Hidden on small mobile) -->
+                <div class="absolute right-[-50px] md:right-32 bottom-20 z-0 hidden lg:block opacity-80 mix-blend-screen pointer-events-none">
+                    <div class="abstract-product">
+                        <div class="abstract-button"></div>
+                        <div class="absolute bottom-10 left-10 right-10 h-32 flex flex-col gap-2">
+                            <div class="h-1 bg-zinc-800 w-full"></div>
+                            <div class="h-1 bg-zinc-800 w-full"></div>
+                            <div class="h-1 bg-zinc-800 w-full"></div>
+                            <div class="h-1 bg-zinc-800 w-full"></div>
+                            <div class="h-1 bg-zinc-800 w-full"></div>
+                        </div>
+                        <div class="absolute top-20 left-10 text-yellow-500 font-mono text-xs">
+                            > TEMP: 55°C<br>
+                            > HUM: 12%<br>
+                            > FAN: 100%
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MARQUEE 1 -->
+            <div class="bg-yellow-500 text-black py-3 overflow-hidden border-y border-black marquee-wrapper">
+                <div class="marquee-content font-bold font-mono text-sm tracking-wider">
+                    <span>PURGE PROTOCOL INITIATED // MOISTURE IS THE ENEMY // DO NOT COMPLY // 850G REMAINING // PURGE PROTOCOL INITIATED // MOISTURE IS THE ENEMY // DO NOT COMPLY // 850G REMAINING //</span>
+                    <span>PURGE PROTOCOL INITIATED // MOISTURE IS THE ENEMY // DO NOT COMPLY // 850G REMAINING // PURGE PROTOCOL INITIATED // MOISTURE IS THE ENEMY // DO NOT COMPLY // 850G REMAINING //</span>
+                </div>
+            </div>
+
+            <!-- SECTION: THERMODYNAMICS -->
+            <section class="border-b border-zinc-800 bg-zinc-950/80 py-16 md:py-24 px-4 md:px-20 relative overflow-hidden">
+                 <!-- Background Schematic Lines -->
+                 <div class="absolute top-0 right-0 w-full md:w-1/2 h-full opacity-10 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
+
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+                     <div>
+                         <div class="inline-block border border-yellow-500 text-yellow-500 px-2 py-1 text-[10px] md:text-xs font-mono mb-4">THERMODYNAMICS</div>
+                         <h2 class="text-4xl md:text-6xl font-bold text-white mb-8">ACTIVE<br>VENTILATION</h2>
+                         <p class="text-zinc-400 font-mono text-sm leading-relaxed mb-8">
+                             Traditional dryers are <span class="text-white bg-red-900/20 px-1">saunas</span>. They heat the water, turn it into steam, and leave it in the box.
+                             <br><br>
+                             PURGE uses a <strong class="text-yellow-500">60mm high-static pressure fan</strong> to aggressively eject saturated air while pulling in fresh, dry air.
+                         </p>
+                         
+                         <!-- Stats -->
+                         <div class="grid grid-cols-2 gap-4 md:gap-8 border-t border-zinc-800 pt-8">
+                             <div>
+                                 <div class="text-3xl md:text-4xl font-bold text-white">300%</div>
+                                 <div class="text-[10px] md:text-xs text-zinc-500 font-mono uppercase mt-1">Faster Drying</div>
+                             </div>
+                             <div>
+                                 <div class="text-3xl md:text-4xl font-bold text-white">0%</div>
+                                 <div class="text-[10px] md:text-xs text-zinc-500 font-mono uppercase mt-1">Re-absorption</div>
+                             </div>
+                         </div>
+                     </div>
+                     
+                     <!-- Diagram Visual -->
+                     <div class="border border-zinc-800 bg-black p-4 md:p-8 relative mt-8 lg:mt-0">
+                         <div class="absolute top-4 right-4 text-xs font-mono text-zinc-600">FIG. 1.2</div>
+                         <div class="flex flex-col gap-4 items-center justify-center h-48 md:h-64 border border-dashed border-zinc-800">
+                             <div class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-zinc-700 flex items-center justify-center relative animate-[spin_4s_linear_infinite]">
+                                 <i data-lucide="fan" class="w-12 h-12 md:w-16 md:h-16 text-zinc-500"></i>
+                             </div>
+                             <div class="flex gap-2">
+                                 <i data-lucide="arrow-up" class="text-yellow-500 animate-bounce"></i>
+                                 <span class="text-[10px] md:text-xs font-mono text-yellow-500">MOISTURE EJECTION</span>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+            </section>
+
+            <!-- SECTION: REMOTE COMMAND -->
+            <section class="border-b border-zinc-800 bg-void-black py-16 md:py-24 px-4 md:px-20">
+                <div class="flex flex-col items-start md:items-end md:text-right mb-12">
+                    <h2 class="text-4xl md:text-7xl font-bold text-white mb-2">REMOTE<br>COMMAND</h2>
+                    <p class="font-mono text-xs md:text-sm text-zinc-500">ESP8266 INTERFACE // PORT 8080</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Feature 1 -->
+                    <div class="border border-zinc-800 p-6 md:p-8 hover:bg-zinc-900 transition-colors group">
+                        <i data-lucide="wifi" class="text-white mb-4 w-8 h-8 group-hover:text-yellow-500 transition-colors"></i>
+                        <h3 class="text-lg md:text-xl font-bold text-white mb-4">ZERO LATENCY</h3>
+                        <p class="font-mono text-xs text-zinc-400 leading-relaxed">Direct WiFi connection. No cloud dependency required. You own the hardware, you own the data.</p>
+                    </div>
+                     <!-- Feature 2 -->
+                     <div class="border border-zinc-800 p-6 md:p-8 hover:bg-zinc-900 transition-colors group">
+                        <i data-lucide="activity" class="text-white mb-4 w-8 h-8 group-hover:text-yellow-500 transition-colors"></i>
+                        <h3 class="text-lg md:text-xl font-bold text-white mb-4">LIVE TELEMETRY</h3>
+                        <p class="font-mono text-xs text-zinc-400 leading-relaxed">Real-time graphing of humidity drop and temperature stability. Watch the moisture die.</p>
+                    </div>
+                     <!-- Feature 3 -->
+                     <div class="border border-zinc-800 p-6 md:p-8 hover:bg-zinc-900 transition-colors group">
+                        <i data-lucide="bell" class="text-white mb-4 w-8 h-8 group-hover:text-yellow-500 transition-colors"></i>
+                        <h3 class="text-lg md:text-xl font-bold text-white mb-4">CRITICAL ALERTS</h3>
+                        <p class="font-mono text-xs text-zinc-400 leading-relaxed">"Filament Dry." "Heater Error." "Spool Empty." Get notified before the print fails.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SPECS GRID (BRUTALIST TABLE) -->
+            <section id="specs" class="border-b border-zinc-800 bg-zinc-950/50">
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                    <div class="p-8 md:p-12 border-b lg:border-b-0 lg:border-r border-zinc-800 flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">TECHNICAL<br>DOMINANCE</h2>
+                            <p class="font-mono text-xs md:text-sm text-zinc-500 max-w-sm">We don't sell boxes. We sell controlled environments.</p>
+                        </div>
+                        <div class="mt-8 md:mt-12">
+                            <div class="text-5xl md:text-6xl font-bold text-zinc-800 select-none">V1.0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="font-mono text-xs md:text-sm">
+                        <!-- Row 1 -->
+                        <div class="grid grid-cols-[80px_1fr] md:grid-cols-[100px_1fr] border-b border-zinc-800 group hover:bg-zinc-900 transition-colors">
+                            <div class="p-4 md:p-6 border-r border-zinc-800 text-zinc-500 uppercase flex items-center">Core</div>
+                            <div class="p-4 md:p-6 text-white flex justify-between items-center">
+                                <span>ESP8266 Wi-Fi SoC</span>
+                                <span class="opacity-100 md:opacity-0 group-hover:opacity-100 text-yellow-500 transition-opacity text-[10px] md:text-xs">[CONNECTED]</span>
+                            </div>
+                        </div>
+                        <!-- Row 2 -->
+                        <div class="grid grid-cols-[80px_1fr] md:grid-cols-[100px_1fr] border-b border-zinc-800 group hover:bg-zinc-900 transition-colors">
+                            <div class="p-4 md:p-6 border-r border-zinc-800 text-zinc-500 uppercase flex items-center">Thermal</div>
+                            <div class="p-4 md:p-6 text-white flex justify-between items-center">
+                                <span>AI-Regulated Chrome Wire</span>
+                                <span class="opacity-100 md:opacity-0 group-hover:opacity-100 text-red-500 transition-opacity text-[10px] md:text-xs">[HOT]</span>
+                            </div>
+                        </div>
+                        <!-- Row 3 -->
+                        <div class="grid grid-cols-[80px_1fr] md:grid-cols-[100px_1fr] border-b border-zinc-800 group hover:bg-zinc-900 transition-colors">
+                            <div class="p-4 md:p-6 border-r border-zinc-800 text-zinc-500 uppercase flex items-center">Sensor</div>
+                            <div class="p-4 md:p-6 text-white flex justify-between items-center">
+                                <span>Calibrated DHT11 Module + HX711 Load Cell</span>
+                                <span class="opacity-100 md:opacity-0 group-hover:opacity-100 text-green-500 transition-opacity text-[10px] md:text-xs">[ACTIVE]</span>
+                            </div>
+                        </div>
+                        <!-- Row 4 -->
+                        <div class="grid grid-cols-[80px_1fr] md:grid-cols-[100px_1fr] group hover:bg-zinc-900 transition-colors">
+                            <div class="p-4 md:p-6 border-r border-zinc-800 text-zinc-500 uppercase flex items-center">Exhaust</div>
+                            <div class="p-4 md:p-6 text-white">
+                                60mm Static Pressure Fan
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- SECTION: FIELD LOGS (TESTIMONIALS) -->
+             <section id="logs" class="py-16 md:py-24 px-4 md:px-20 border-b border-zinc-800 bg-zinc-900">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 md:mb-12 uppercase">Field Logs</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Log 1 -->
+                    <div class="bg-black border border-zinc-800 p-6 relative">
+                        <div class="absolute -top-3 left-4 bg-yellow-500 text-black px-2 py-1 text-[10px] font-bold">LOG #402</div>
+                        <p class="font-mono text-zinc-400 text-sm mb-4 leading-relaxed">"My Nylon prints were failing for weeks. Ran PURGE protocol for 4 hours. Moisture dropped from 60% to 15%. Print succeeded."</p>
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 md:w-8 md:h-8 bg-zinc-800 rounded-full"></div>
+                            <div class="text-[10px] md:text-xs font-bold text-white">UNIT_OPERATOR_ALEX</div>
+                        </div>
+                    </div>
+                    <!-- Log 2 -->
+                    <div class="bg-black border border-zinc-800 p-6 relative">
+                        <div class="absolute -top-3 left-4 bg-zinc-700 text-white px-2 py-1 text-[10px] font-bold">LOG #891</div>
+                        <p class="font-mono text-zinc-400 text-sm mb-4 leading-relaxed">"The load cell integration is a game changer. I finally know exactly how much filament I have left for overnight jobs."</p>
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 md:w-8 md:h-8 bg-zinc-800 rounded-full"></div>
+                            <div class="text-[10px] md:text-xs font-bold text-white">MAKER_PRO_99</div>
+                        </div>
+                    </div>
+                    <!-- Log 3 -->
+                    <div class="bg-black border border-zinc-800 p-6 relative">
+                        <div class="absolute -top-3 left-4 bg-zinc-700 text-white px-2 py-1 text-[10px] font-bold">LOG #112</div>
+                        <p class="font-mono text-zinc-400 text-sm mb-4 leading-relaxed">"Brutal design. Works exactly as described. No fluff. Just dry filament. The interface makes me feel like I'm hacking the Gibson."</p>
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 md:w-8 md:h-8 bg-zinc-800 rounded-full"></div>
+                            <div class="text-[10px] md:text-xs font-bold text-white">SYSADMIN_RYAN</div>
+                        </div>
+                    </div>
+                </div>
+             </section>
+
+            <!-- MARQUEE 2 -->
+            <div class="bg-zinc-800 text-zinc-500 py-2 overflow-hidden border-t border-black marquee-wrapper">
+                <div class="marquee-content font-mono text-[10px] md:text-xs tracking-widest">
+                    <span>SYSTEM READY // WAITING FOR INPUT // CHECKING PERIPHERALS // SYSTEM READY // WAITING FOR INPUT // CHECKING PERIPHERALS // SYSTEM READY // WAITING FOR INPUT // CHECKING PERIPHERALS //</span>
+                    <span>SYSTEM READY // WAITING FOR INPUT // CHECKING PERIPHERALS // SYSTEM READY // WAITING FOR INPUT // CHECKING PERIPHERALS // SYSTEM READY // WAITING FOR INPUT // CHECKING PERIPHERALS //</span>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <footer class="p-8 md:p-24 bg-void-black border-t border-zinc-800 mb-16 md:mb-0">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-12">
+                    <div class="w-full md:w-auto">
+                        <h2 class="text-4xl md:text-8xl font-bold leading-none text-white tracking-tighter mb-8">
+                            DEPLOY<br><span class="text-zinc-800 hover:text-yellow-500 transition-colors cursor-pointer">UNIT?</span>
+                        </h2>
+                        <div class="flex flex-col sm:flex-row gap-2 w-full">
+                             <input type="email" placeholder="ACCESS_CODE (EMAIL)" class="bg-zinc-900 border border-zinc-800 p-4 text-white font-mono focus:border-yellow-500 outline-none w-full sm:w-64 placeholder-zinc-600">
+                             <button class="bg-white text-black font-bold px-6 py-4 sm:py-0 hover:bg-yellow-500 transition-colors uppercase">INITIALIZE</button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-left md:text-right font-mono text-[10px] md:text-xs text-zinc-500 flex flex-col gap-2 w-full md:w-auto">
+                        <a href="#" class="hover:text-white">OPERATIONAL_MANUAL.PDF</a>
+                        <a href="#" class="hover:text-white">FIRMWARE_SOURCE_V1.ZIP</a>
+                        <a href="#" class="hover:text-white">MISSION_PROTOCOLS</a>
+                        <span class="mt-4">© 2025 PURGE SYSTEMS</span>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Icons
+        lucide.createIcons();
+
+        // Boot Screen Logic
+        const bootScreen = document.getElementById('boot-screen');
+        const bootText = document.getElementById('boot-text');
+        const texts = ["CHECKING SENSORS...", "CALIBRATING HEATERS...", "CONNECTING TO ESP8266...", "SYSTEM READY"];
+        
+        let i = 0;
+        const interval = setInterval(() => {
+            if(i < texts.length) {
+                bootText.innerText = texts[i];
+                i++;
+            }
+        }, 500);
+
+        setTimeout(() => {
+            bootScreen.style.opacity = '0';
+            bootScreen.style.pointerEvents = 'none';
+            clearInterval(interval);
+        }, 2200);
+
+        // OPTIMIZED CURSOR LOGIC (Desktop Only)
+        if (window.matchMedia("(min-width: 768px)").matches) {
+            const cursor = document.getElementById('cursor');
+            
+            // Move cursor with transform for performance (No lag)
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.opacity = '1';
+                cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
+            });
+
+            // Hover effects for interactive elements
+            // We use event delegation for better performance and to handle dynamic content
+            document.addEventListener('mouseover', (e) => {
+                const target = e.target;
+                if (target.matches('a, button, input, .btn-primary, [role="button"]')) {
+                    cursor.classList.add('hovered');
+                }
+            });
+
+            document.addEventListener('mouseout', (e) => {
+                const target = e.target;
+                if (target.matches('a, button, input, .btn-primary, [role="button"]')) {
+                    cursor.classList.remove('hovered');
+                }
+            });
+        }
+
+        // Scroll Progress
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            const progress = document.getElementById("scroll-progress");
+            if(progress) progress.style.height = scrolled + "%";
+        });
+    </script>
+</body>
+</html>
